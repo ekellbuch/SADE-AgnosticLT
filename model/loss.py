@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
- 
+from torch.nn.modules.loss import _Loss
+
 eps = 1e-7 
 
 def focal_loss(input_values, gamma):
@@ -46,6 +47,37 @@ class CrossEntropyLoss(nn.Module):
 
     def forward(self, output_logits, target): # output is logits
         return F.cross_entropy(output_logits, target, weight=self.per_cls_weights)
+
+class BalancedSoftmax(_Loss):
+    """
+    Balanced Softmax Loss
+    """
+
+    def __init__(self, cls_num_list=None):
+        super(BalancedSoftmax, self).__init__()
+        self.cls_num_list = torch.tensor(cls_num_list, dtype=torch.float, requires_grad=False)
+
+    def forward(self, input, label, reduction='mean'):
+        return balanced_softmax_loss(label, input, self.cls_num_list,
+                                     reduction)
+
+
+def balanced_softmax_loss(labels, logits, sample_per_class, reduction):
+    """Compute the Balanced Softmax Loss between `logits` and the ground truth `labels`.
+    Args:
+      labels: A int tensor of size [batch].
+      logits: A float tensor of size [batch, no_of_classes].
+      sample_per_class: A int tensor of size [no of classes].
+      reduction: string. One of "none", "mean", "sum"
+    Returns:
+      loss: A float tensor. Balanced Softmax Loss.
+    """
+    spc = sample_per_class.type_as(logits)
+    spc = spc.unsqueeze(0).expand(logits.shape[0], -1)
+    logits = logits + spc.log()
+    loss = F.cross_entropy(input=logits, target=labels, reduction=reduction)
+    return loss
+
 
 class LDAMLoss(nn.Module):
     def __init__(self, cls_num_list=None, max_m=0.5, s=30, reweight_epoch=-1):
@@ -239,8 +271,8 @@ class RIDELoss(nn.Module):
             loss += self.additional_diversity_factor * temperature_mean * temperature_mean * F.kl_div(output_dist, mean_output_dist, reduction='batchmean')
         
         return loss
-  
- 
+
+
 class DiverseExpertLoss(nn.Module):
     def __init__(self, cls_num_list=None,  max_m=0.5, s=30, tau=2):
         super().__init__()
