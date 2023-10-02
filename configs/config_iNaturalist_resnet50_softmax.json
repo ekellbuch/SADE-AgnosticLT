@@ -1,5 +1,5 @@
 {
-    "name": "iNaturalist_ResNet50_SADE",
+    "name": "iNaturalist_ResNet50_Softmax",
     "n_gpu": 4,
 
     "arch": {
@@ -8,7 +8,6 @@
             "num_classes": 8142,
             "reduce_dimension": true,
             "use_norm": true,
-            "returns_feat": true,
             "num_experts": 3
         }
     },
@@ -30,7 +29,7 @@
             "nesterov": true
         }
     },
-    "add_extra_info": true,
+    "add_extra_info": false,
     "loss": {
         "type": "CrossEntropyLoss",
         "args": {

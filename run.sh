@@ -3,21 +3,23 @@
 # Run code in all different datasets
 set -ex
 
-# train 3 models on inaturalist using softmax
-for i in {1..3}:
+# downloading data on vm
+# [ ] train 3 models on inaturalist using softmax loss
+# [ ] train 4 models on cifar100 imbalance factor = 200 w softmax loss
+# [ ] train 4 models on cifar100aug imbalance factor = 200 w softmax loss
+# [ ] train 4 models on cifar100aug imbalance factor = 200 w bsoftmax loss
+# [ ] train 4 models on cifar100 imbalance factor = 200 w bsoftmax loss
+
+for i in {1..4}
 do
+# to run on vm
 python train.py -c configs/config_iNaturalist_resnet50_softmax.json
+#python train.py -c configs/config_cifar100_ir200_softmax.json
 done
-# train 3 models on inaturalist using balanced softmax
 # python train.py -c configs/config_iNaturalist_resnet50_softmax.json
 
 
 
-# imbalance factor = 100
-# train a cifar10  model using sade?:
-# train a cifar100  model using sade?:
-
-#python train.py -c configs/config_iNaturalist_resnet50_softmax.json
 
 
 # Other runs:

@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Dataset, Sampler
 from base import BaseDataLoader
 from PIL import Image
 from .imbalance_cifar import IMBALANCECIFAR10, IMBALANCECIFAR100
+from .autoaugment import CIFAR10Policy, Cutout
 
 class CIFAR100DataLoader(DataLoader):
     """
@@ -89,6 +90,7 @@ class BalancedSampler(Sampler):
         else:
             return max([len(bucket) for bucket in self.buckets]) * self.bucket_num # Ensures every instance has the chance to be visited in an epoch
 
+
 class ImbalanceCIFAR100DataLoader(DataLoader):
     """
     Imbalance Cifar100 Data Loader
@@ -96,13 +98,7 @@ class ImbalanceCIFAR100DataLoader(DataLoader):
     def __init__(self, data_dir, batch_size, shuffle=True, num_workers=1, training=True, balanced=False, retain_epoch_size=True, imb_type='exp', imb_factor=0.01):
         normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
             std=[0.2023, 0.1994, 0.2010])
-        train_trsfm = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ToTensor(),
-            normalize,
-        ])
+        train_trsfm = self.train_transform()
         test_trsfm = transforms.Compose([
             transforms.ToTensor(),
             normalize,
@@ -149,12 +145,43 @@ class ImbalanceCIFAR100DataLoader(DataLoader):
 
         super().__init__(dataset=self.dataset, **self.init_kwargs, sampler=sampler) # Note that sampler does not apply to validation set
 
+    def train_transform(self, aug=False):
+        normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
+            std=[0.2023, 0.1994, 0.2010])
+        train_trsfm = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            normalize,
+        ])
+        return train_trsfm
+
     def split_validation(self):
         # If you do not want to validate:
         # return None
         # If you want to validate:
         return DataLoader(dataset=self.val_dataset, **self.init_kwargs)
 
+class ImbalanceCIFAR100DataAugLoader(ImbalanceCIFAR100DataLoader):
+    """
+    Imbalance Cifar100 Data Loader
+    """
+    def __init__(self, data_dir, batch_size, shuffle=True, num_workers=1, training=True, balanced=False, retain_epoch_size=True, imb_type='exp', imb_factor=0.01):
+        super().__init__(data_dir, batch_size, shuffle, num_workers, training, balanced, retain_epoch_size, imb_type, imb_factor)
+
+    def train_transform(self, aug=True):
+        normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
+                                         std=[0.2023, 0.1994, 0.2010])
+        train_trsfm = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            CIFAR10Policy(),  # add AutoAug
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            normalize,
+        ])
+        return train_trsfm
 class  TestAgnosticImbalanceCIFAR100DataLoader(DataLoader):
     """
     Imbalance Cifar100 Data Loader
