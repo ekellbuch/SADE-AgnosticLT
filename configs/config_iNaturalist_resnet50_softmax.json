@@ -8,7 +8,7 @@
             "num_classes": 8142,
             "reduce_dimension": true,
             "use_norm": true,
-            "num_experts": 3
+            "num_experts": 1
         }
     },
     "data_loader": {
