@@ -51,7 +51,7 @@
     "trainer": {
         "epochs": 100,
 
-        "save_dir": "saved/inaturalist/softmax_e100_inv1_bs512_lr0.2",
+        "save_dir": "saved/inaturalist/bsoftmax_e100_inv1_bs512_lr0.2",
         "save_period": 100,
         "verbosity": 2,
 
