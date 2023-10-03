@@ -177,8 +177,9 @@ class ImbalanceCIFAR100DataAugLoader(ImbalanceCIFAR100DataLoader):
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             CIFAR10Policy(),  # add AutoAug
-            transforms.RandomRotation(15),
             transforms.ToTensor(),
+            transforms.RandomRotation(15),
+            Cutout(n_holes=1, length=16),
             normalize,
         ])
         return train_trsfm
@@ -255,23 +256,17 @@ class ImbalanceCIFAR10DataLoader(DataLoader):
     """
     Imbalance Cifar10 Data Loader
     """
-    def __init__(self, data_dir, batch_size, shuffle=True, num_workers=1, training=True, balanced=False, retain_epoch_size=True, imb_factor=0.01):
+    def __init__(self, data_dir, batch_size, shuffle=True, num_workers=1, training=True, balanced=False, retain_epoch_size=True, imb_type='exp', imb_factor=0.01):
         normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
             std=[0.2023, 0.1994, 0.2010])
-        train_trsfm = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ToTensor(),
-            normalize,
-        ])
+        train_trsfm = self.train_transform()
         test_trsfm = transforms.Compose([
             transforms.ToTensor(),
             normalize,
         ])
         
         if training:
-            dataset = IMBALANCECIFAR10(data_dir, train=True, download=True, transform=train_trsfm, imb_factor=0.01)
+            dataset = IMBALANCECIFAR10(data_dir, train=True, download=True, transform=train_trsfm, imb_factor=imb_factor, imb_type=imb_type)
             val_dataset = datasets.CIFAR10(data_dir, train=False, download=True, transform=test_trsfm) # test set
         else:
             dataset = datasets.CIFAR10(data_dir, train=False, download=True, transform=test_trsfm) # test set
@@ -315,3 +310,36 @@ class ImbalanceCIFAR10DataLoader(DataLoader):
         # return None
         # If you want to validate:
         return DataLoader(dataset=self.val_dataset, **self.init_kwargs)
+
+    def train_transform(self, aug=False):
+        normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
+            std=[0.2023, 0.1994, 0.2010])
+        train_trsfm = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            normalize,
+        ])
+        return train_trsfm
+
+class ImbalanceCIFAR10DataAugLoader(ImbalanceCIFAR10DataLoader):
+    """
+    Imbalance Cifar100 Data Loader
+    """
+    def __init__(self, data_dir, batch_size, shuffle=True, num_workers=1, training=True, balanced=False, retain_epoch_size=True, imb_type='exp', imb_factor=0.01):
+        super().__init__(data_dir, batch_size, shuffle, num_workers, training, balanced, retain_epoch_size, imb_type, imb_factor)
+
+    def train_transform(self, aug=True):
+        normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
+                                         std=[0.2023, 0.1994, 0.2010])
+        train_trsfm = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            CIFAR10Policy(),  # add AutoAug
+            transforms.ToTensor(),
+            transforms.RandomRotation(15),
+            Cutout(n_holes=1, length=16),
+            normalize,
+        ])
+        return train_trsfm

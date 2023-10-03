@@ -1,4 +1,4 @@
-from .cifar_data_loaders import ImbalanceCIFAR10DataLoader, CIFAR100DataLoader, ImbalanceCIFAR100DataLoader, ImbalanceCIFAR10DataLoader, ImbalanceCIFAR100DataAugLoader
+from .cifar_data_loaders import ImbalanceCIFAR10DataLoader, CIFAR100DataLoader, ImbalanceCIFAR100DataLoader, ImbalanceCIFAR10DataLoader, ImbalanceCIFAR100DataAugLoader, ImbalanceCIFAR10DataAugLoader
 from .imagenet_lt_data_loaders import ImageNetLTDataLoader
 from .inaturalist_data_loaders import iNaturalistDataLoader
 from .places_loader import Places_LT
