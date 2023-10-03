@@ -1,5 +1,5 @@
 {
-    "name": "Imbalance_CIFAR100LT_IR200_Softmax",
+    "name": "Imbalance_CIFAR100LTAug_IR200_Softmax",
     "n_gpu": 1,
 
     "arch": {
@@ -12,7 +12,7 @@
         }
     },
     "data_loader": {
-        "type": "ImbalanceCIFAR100DataLoader",
+        "type": "ImbalanceCIFAR100DataAugLoader",
         "args":{
             "data_dir": "./data/CIFAR-100",
             "batch_size": 128,
